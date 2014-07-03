@@ -45,20 +45,14 @@ module IRC
       @probe = nil
       @buffer = ''
     end
-    attr_reader :receiver, :probe
-    def new_receiver(klass, *args, **opts)
-      @receiver = klass ? (opts.empty? ? klass.new(self,*args) : klass.new(self,*args,**opts)) : nil
-    end
-    def new_probe(klass, *args, **opts)
-      @probe = klass ? (opts.empty? ? klass.new(self,*args) : klass.new(self,*args,**opts)) : nil
-    end
+    attr_accessor :receiver, :probe
     def to_io; @socket; end
-    def read_nonblock
-      @buffer += @socket.read_nonblock(MAXLEN)
-      *lines,@buffer = @buffer.split(NEWLINE,-1)
+    def receive
+      @buffer += @socket.read_nonblock MAXLEN
+      *lines,@buffer = @buffer.split NEWLINE,-1
       lines.map do |line|
         message = Message.parse line
-        @receiver.call message if @receiver
+        @receiver.call(message){|reply|send(reply)} if @receiver
         message
       end
     end
