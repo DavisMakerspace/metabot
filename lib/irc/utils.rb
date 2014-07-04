@@ -1,13 +1,5 @@
 module IRC
   ERR_NICKNAMEINUSE = 433
-  class DebugLog
-    def initialize(log=Logger.new(STDERR), level:Logger::DEBUG, progname:nil)
-      @log = log
-      @level = level
-      @progname = progname
-    end
-    def call(msg); @log.add(@level,nil,@progname){msg.line}; end
-  end
   class Init
     def initialize(nickname, username, realname, mode:0, password:nil, channels:nil)
       @nickname = nickname
