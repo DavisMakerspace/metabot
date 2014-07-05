@@ -1,0 +1,42 @@
+#!/usr/bin/env ruby
+
+require 'socket'
+require_relative '../lib/lineio'
+require_relative '../lib/receiver'
+
+require 'minitest/spec'
+require 'minitest/autorun'
+
+describe LineIO do
+  PORT = 0
+  TRIES = 10
+  it "talks with multiple clients" do
+    tcpserver = TCPServer.new PORT
+    port = tcpserver.connect_address.ip_port
+    ls = LineIO::Server.new tcpserver
+    ls.receiver = ->(client) do
+      client.receiver = ->(msg,&s){s.call "#{client.object_id} #{msg}" if s}
+      client.probe = ->(msg){msg.split.first.to_i.must_equal client.object_id}
+    end
+    Thread.new do
+      loop do
+        rs,_ = IO.select ls.sockets
+        rs.each{|s|s.receive}
+      end
+    end.abort_on_exception=true
+    sockets = TRIES.times.map do
+      TCPSocket.new 'localhost', port
+    end
+    TRIES.times do |try|
+      sockets.shuffle.each do |s|
+        s.puts "#{s.object_id} #{try}"
+      end
+      sockets.shuffle.each do |s|
+        s.gets.chomp.partition(' ').last.must_equal "#{s.object_id} #{try}"
+      end
+    end
+    sockets.shuffle.each do |s|
+      s.close
+    end
+  end
+end
