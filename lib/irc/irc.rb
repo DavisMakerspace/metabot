@@ -11,6 +11,7 @@ module IRC
       @reply = Integer(@cmd) rescue nil
     end
     attr_reader :line, :prefix, :cmd, :params, :overrun, :reply
+    def to_s; line; end
     def self.parse(line)
       line.chomp! NEWLINE
       prefix,_,body = line[0] == ':' ? line[1..-1].partition(' ') : [nil,nil,line]

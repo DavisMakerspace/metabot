@@ -1,0 +1,13 @@
+# NAME, VERSION, and HOST are available coming into this file
+
+SERVER = TCPServer.new 8888
+
+IRCSOCKET = TCPSocket.new 'irc.example.org', 6667
+NICKNAME = '[bot]'
+USERNAME = 'bot'
+REALNAME = "#{NAME} #{VERSION} @ #{HOST}"
+CHANNEL = '#bot'
+PREFIX = '!'
+
+LOGGER = Logger.new STDERR
+LOGGER.level = Logger::DEBUG

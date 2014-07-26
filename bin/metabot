@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'logger'
+require 'socket'
+require_relative '../lib/metabot'
+
+NAME = File.basename $0
+VERSION = %x{cd #{File.dirname $0} && git describe --dirty=-modified}.strip
+HOST = Socket.gethostbyname(Socket.gethostname).first
+
+require_relative '../etc/config'
+
+MetaBot::Server.new(SERVER, IRCSOCKET, NICKNAME, USERNAME, REALNAME, CHANNEL, logger:LOGGER, prefix:PREFIX).run
