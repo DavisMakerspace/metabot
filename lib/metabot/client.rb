@@ -43,7 +43,7 @@ module MetaBot
     def call(msg)
       (@finished=true;return) if !msg
       return if msg.empty?
-      cmdargs,sep,more = msg.partition ':'
+      cmdargs,sep,more = msg.partition ' :'
       cmd,*args = cmdargs.split
       args.push more if !sep.empty?
       yield handle_cmd cmd, *args
