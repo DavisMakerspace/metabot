@@ -29,6 +29,7 @@ module MetaBot
       'OK'
     end
     def handle_cmd(cmd, *args)
+      cmd = 'cmd_'+cmd.downcase
       if respond_to? cmd
         begin
           send cmd, *args
@@ -44,7 +45,6 @@ module MetaBot
       return if msg.empty?
       cmdargs,sep,more = msg.partition ':'
       cmd,*args = cmdargs.split
-      cmd = 'cmd_'+cmd.downcase
       args.push more if !sep.empty?
       yield handle_cmd cmd, *args
     end
