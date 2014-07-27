@@ -16,7 +16,7 @@ module LineIO
     def receive
       begin
         @buffer += @socket.read_nonblock @readsize
-      rescue EOFError
+      rescue EOFError, Errno::ECONNRESET
         @buffer = nil
         @receiver.call nil if @receiver
         nil
