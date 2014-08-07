@@ -15,7 +15,6 @@ module MetaBot
       'OK'
     end
     def cmd_cmds(*irccmds)
-      return 'ERROR :locked' if @locked
       @irccmds = irccmds
       'OK'
     end
