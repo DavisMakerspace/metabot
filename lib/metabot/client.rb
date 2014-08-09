@@ -2,7 +2,7 @@ module MetaBot
   class Client
     def initialize
       @name = nil
-      @irccmds = []
+      @irccmds = {}
       @queue = []
       @locked = false
       @finished = false
@@ -14,12 +14,12 @@ module MetaBot
       @name = name
       'OK'
     end
-    def cmd_cmds(*irccmds)
-      @irccmds = irccmds
-      'OK'
-    end
     def cmd_lock
       @locked = true
+      'OK'
+    end
+    def cmd_addcmd(cmd, desc)
+      @irccmds[cmd] = desc
       'OK'
     end
     def cmd_send(msg)

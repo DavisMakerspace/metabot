@@ -1,11 +1,13 @@
 module MetaBot
   PREFIX = '!'
+  QPREFIX = '?'
   class Server
-    def initialize(server, ircsocket, nickname, username, realname, channel, formatter:nil, logger:Logger.new(STDERR), prefix:PREFIX)
+    def initialize(server, ircsocket, nickname, username, realname, channel, formatter:nil, logger:Logger.new(STDERR), prefix:PREFIX, qprefix:QPREFIX)
       @server = LineIO::Server.new server
       @channel = channel
       @formatter = formatter || ->(msg,tag){ tag ? "#{tag} | #{msg}" : msg }
       @prefix = prefix
+      @qprefix = qprefix
       @realname = realname
       @irc = IRC::Client.new ircsocket
       @irc.probe = Receiver::DebugLog.new logger, progname:'irc-send' if logger
@@ -30,11 +32,20 @@ module MetaBot
     end
     def handle_irccmd(cmd)
       case cmd.command
-      when '' then send_irc "#{@realname} [#{@prefix}? to show available commands]"
-      when '?'
-        cmds = @clients.keys.flat_map{|c|c.irccmds||[]}
-        cmds = cmds.empty? ? 'No commands available' : "commands: #{cmds.join ' '}"
-        send_irc cmds
+      when '' then send_irc "#{@realname} [#{@prefix}#{@qprefix} shows available commands; #{@prefix}#{@qprefix} cmd to describe command cmd]"
+      when @qprefix
+        if cmd.arg.empty?
+          cmds = @clients.keys.flat_map{|c|c.irccmds.keys||[]}
+          cmds = cmds.empty? ? 'no commands available' : "commands: #{cmds.join ' '}"
+          send_irc cmds
+        else
+          client, _ = @clients.find{|c,_| c.irccmds.include? cmd.arg}
+          if client
+            send_irc "#{cmd.arg}: #{client.irccmds[cmd.arg]}"
+          else
+            send_irc 'unknown command'
+          end
+        end
       end
     end
     def run
@@ -45,9 +56,12 @@ module MetaBot
         @clients.reject!{|c|c.finished?}
         @ircclient.queue.each do |cmd|
           if ! handle_irccmd cmd
-            handlers = @clients.select{|c,_| c.irccmds.include? cmd.command}
-            handlers.each{|c,cio| cio.send c.handle_irccmd cmd}
-            send_irc('Unknown command') if handlers.empty?
+            client, client_io = @clients.find{|c,_| c.irccmds.include? cmd.command}
+            if client
+              client_io.send client.handle_irccmd cmd
+            else
+              send_irc 'unknown command'
+            end
           end
         end
         @ircclient.queue.clear
