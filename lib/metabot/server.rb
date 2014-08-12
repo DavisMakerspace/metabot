@@ -5,7 +5,7 @@ module MetaBot
     def initialize(server, ircsocket, nickname, username, realname, channel, formatter:nil, logger:Logger.new(STDERR), prefix:PREFIX, qprefix:QPREFIX)
       @server = LineIO::Server.new server
       @channel = channel
-      @formatter = formatter || ->(msg,tag){ tag ? "#{tag} | #{msg}" : msg }
+      @formatter = formatter || ->(msg,tag){ tag ? "[#{tag}] #{msg}" : msg }
       @prefix = prefix
       @qprefix = qprefix
       @realname = realname
